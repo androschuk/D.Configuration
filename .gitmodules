@@ -1,0 +1,3 @@
+[submodule "Modules/D.Library"]
+	path = Modules/D.Library
+	url = git@github.com:androschuk/D.Library.git
