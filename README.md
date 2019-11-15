@@ -5,7 +5,7 @@ Includes configuration providers for environment variables, INI files, JSON file
 The basic idea is taken from [.NET APIs configuration utilities](https://github.com/aspnet/Extensions)
 
 ### Example
-```
+```pascal
 function BuildConfig: IConfigurationRoot;
 var
   configBuilder: IConfigurationBuilder;
