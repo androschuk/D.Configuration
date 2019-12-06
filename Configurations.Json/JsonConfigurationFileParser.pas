@@ -118,6 +118,7 @@ end;
 procedure TJsonConfigurationFileParser.VisitValue(value: TJSONValue);
 var
   index: Integer;
+  arrayElements: TJSONArray;
   arrayElement: TJSONValue;
   key: string;
 begin
@@ -129,13 +130,14 @@ begin
   if value is TJSONArray then
   begin
     index := 0;
-    for arrayElement in value.AsType<TJSONArray> do
-    begin
-      EnterContext(index.ToString);
-      VisitValue(arrayElement);
-      ExitContext;
-      Inc(index);
-    end;
+    if (value.TryGetValue<TJSONArray>(arrayElements)) then
+        for arrayElement in arrayElements do
+        begin
+          EnterContext(index.ToString);
+          VisitValue(arrayElement);
+          ExitContext;
+          Inc(index);
+        end;
   end
   else
   if (value is TJSONNumber) Or
