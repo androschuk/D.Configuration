@@ -4,6 +4,16 @@ Includes configuration providers for environment variables, INI files, JSON file
 
 The basic idea is taken from [.NET APIs configuration utilities](https://github.com/aspnet/Extensions)
 
+# Initial clone and update
+
+If it's the first time you checkout a repo you need to use:
+```
+git clone <repository url>
+git submodule update --init --recursive
+```
+For git 1.8.2 or above the option --remote was added to support updating to latest tips of remote branches:
+```git submodule update --recursive --remote```
+
 ### Example
 ```pascal
 function BuildConfig: IConfigurationRoot;
