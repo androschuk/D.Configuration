@@ -12,7 +12,9 @@ git clone <repository url>
 git submodule update --init --recursive
 ```
 For git 1.8.2 or above the option --remote was added to support updating to latest tips of remote branches:
-```git submodule update --recursive --remote```
+```
+git submodule update --recursive --remote
+```
 
 ### Example
 ```pascal
