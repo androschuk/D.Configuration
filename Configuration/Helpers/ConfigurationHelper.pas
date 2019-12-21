@@ -100,27 +100,31 @@ begin
   list := TList<TPair<string, string>>.Create;
 
   stack := TStack<IConfiguration>.Create();
-  stack.Push(configuration);
+  try
+      stack.Push(configuration);
 
-  rootSection := configuration as IConfigurationSection;
-  prefixLength := IfThen((makePathsRelative And Assigned(rootSection)), rootSection.Path.Length + 1 , 0);
-  while (stack.Count > 0) do
-  begin
-    config := stack.Pop();
-    // Don't include the sections value if we are removing paths, since it will be an empty key
-    section := (config as IConfigurationSection);
-    if (Assigned(section) And (Not makePathsRelative Or (config <> configuration))) then
-    begin
-      list.Add(TPair<string, string>.Create(section.Path.Substring(prefixLength), section.Value))
-    end;
+      rootSection := configuration as IConfigurationSection;
+      prefixLength := IfThen((makePathsRelative And Assigned(rootSection)), rootSection.Path.Length + 1 , 0);
+      while (stack.Count > 0) do
+      begin
+        config := stack.Pop();
+        // Don't include the sections value if we are removing paths, since it will be an empty key
+        section := (config as IConfigurationSection);
+        if (Assigned(section) And (Not makePathsRelative Or (config <> configuration))) then
+        begin
+          list.Add(TPair<string, string>.Create(section.Path.Substring(prefixLength), section.Value))
+        end;
 
-    for child in config.GetChildren do
-    begin
-        stack.Push(child);
-    end;
+        for child in config.GetChildren do
+        begin
+            stack.Push(child);
+        end;
+      end;
+
+      result := list;
+  finally
+      FreeAndNil(stack);
   end;
-
-  result := list;
 end;
 
 class function TConfigurationHelper.Exists(section: IConfigurationSection): Boolean;

@@ -20,6 +20,7 @@ type
     /// </summary>
     /// <param name="info">The <see cref="System.IO.FileInfo"/></param>
     constructor Create(fileInfo: TFileInfo);
+    destructor Destroy; override;
 
     /// <summary>
     /// True if resource exists in the underlying storage system.
@@ -70,6 +71,12 @@ end;
 function TPhysicalFileInfo.CreateReadStream: TStream;
 begin
   Result :=  TFileStream.Create(PhysicalPath, fmOpenRead Or fmShareDenyNone);
+end;
+
+destructor TPhysicalFileInfo.Destroy;
+begin
+  FreeAndNil(FFileInfo);
+  inherited;
 end;
 
 function TPhysicalFileInfo.Exists: Boolean;

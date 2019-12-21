@@ -3,40 +3,56 @@ unit FileConfigurationHelper;
 interface
 
 uses
-  System.SysUtils, ConfigurationBuilder.Intf, FileProvider.Intf, PhysicalFileProvider;
+  System.SysUtils, ConfigurationBuilder.Intf, FileProvider.Intf, PhysicalFileProvider,
+  ConfigurationBuilder;
 
 type
   /// <summary>
-  /// Helper methods for <see cref="FileConfigurationProvider"/>.
+  /// Helper record for <see cref="FileConfigurationProvider"/>.
   /// </summary>
-  TFileConfigurationHelper = class
+  TFileConfiguration = record
   private
+    var
+      FConfigurationBuilder: IConfigurationBuilder;
+  {$HINTS OFF}
+    // cause record to be passed as reference on const parameter
+    // because it does not fit in a register
+    fDummy: Pointer;
+  {$HINTS ON}
     const
        FileProviderKey : string = 'FileProvider';
        FileLoadExceptionHandlerKey : string = 'FileLoadExceptionHandler';
   public
     /// <summary>
+    ///  Implicit casting
+    ///  <param name="value">The <see cref="IConfigurationBuilder"/> to use to.</param>
+    /// </summary>
+    class operator Implicit(const value: IConfigurationBuilder): TFileConfiguration;
+    /// <summary>
+    ///  Implicit casting
+    ///  <param name="value">The <see cref="TFileConfiguration"/> to use to.</param>
+    /// </summary>
+    class operator Implicit(const value: TFileConfiguration): IConfigurationBuilder;
+
+    /// <summary>
     /// Sets the default <see cref="IFileProvider"/> to be used for file-based providers.
     /// </summary>
-    /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
     /// <param name="fileProvider">The default file provider instance.</param>
     /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-    class function SetFileProvider(builder: IConfigurationBuilder; fileProvider: IFileProvider): IConfigurationBuilder;
+    function SetFileProvider(fileProvider: IFileProvider): IConfigurationBuilder;
 
     /// <summary>
     /// Gets the default <see cref="IFileProvider"/> to be used for file-based providers.
     /// </summary>
-    /// <param name="builder">The <see cref="IConfigurationBuilder"/>.</param>
     /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-    class function GetFileProvider(builder: IConfigurationBuilder): IFileProvider;
+    function GetFileProvider: IFileProvider;
 
     /// <summary>
     /// Sets the FileProvider for file-based providers to a PhysicalFileProvider with the base path.
     /// </summary>
-    /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
     /// <param name="basePath">The absolute path of file-based providers.</param>
     /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-    class function SetBasePath(builder: IConfigurationBuilder; basePath: string ): IConfigurationBuilder;
+    function SetBasePath(basePath: string ): IConfigurationBuilder;
 
     //TODO: SetFileLoadExceptionHandler
     //SetFileLoadExceptionHandler(builder: IConfigurationBuilder; handler: TFunc<TFileLoadExceptionContext> ): IConfigurationBuilder;
@@ -69,16 +85,12 @@ implementation
 //  Result := Nil;
 //end;
 
-class function TFileConfigurationHelper.GetFileProvider(
-  builder: IConfigurationBuilder): IFileProvider;
+function TFileConfiguration.GetFileProvider: IFileProvider;
 var
   prov: IInterface;
   provider: IFileProvider;
 begin
-  if builder = Nil then
-    raise EArgumentNilException.Create('builder');
-
-  if builder.Properties.TryGetValue(FileProviderKey, prov) then
+  if FConfigurationBuilder.Properties.TryGetValue(FileProviderKey, prov) then
   begin
     if Supports(prov, IFileProvider, provider) then
       Exit(provider)
@@ -90,32 +102,33 @@ begin
   Result := TPhysicalFileProvider.Create(string.Empty);
 end;
 
-class function TFileConfigurationHelper.SetBasePath(
-  builder: IConfigurationBuilder; basePath: string): IConfigurationBuilder;
+class operator TFileConfiguration.Implicit(const value: IConfigurationBuilder): TFileConfiguration;
 begin
-  if builder = Nil then
-    raise EArgumentNilException.Create('builder');
+    Result.FConfigurationBuilder := value;
+end;
 
+class operator TFileConfiguration.Implicit(const value: TFileConfiguration): IConfigurationBuilder;
+begin
+    Result := value.FConfigurationBuilder;
+end;
+
+function TFileConfiguration.SetBasePath(basePath: string): IConfigurationBuilder;
+begin
   if basePath.IsEmpty then
     raise EArgumentNilException.Create('basePath');
 
-  Result := TFileConfigurationHelper.SetFileProvider(builder, TPhysicalFileProvider.Create(basePath))
+  Result := SetFileProvider(TPhysicalFileProvider.Create(basePath));
 end;
 
-class function TFileConfigurationHelper.SetFileProvider(
-  builder: IConfigurationBuilder;
-  fileProvider: IFileProvider): IConfigurationBuilder;
+function TFileConfiguration.SetFileProvider(fileProvider: IFileProvider): IConfigurationBuilder;
 begin
-  if builder = Nil then
-    raise EArgumentNilException.Create('builder');
-
   if fileProvider = Nil then
     raise EArgumentNilException.Create('fileProvider');
 
-  builder.Properties.AddOrSetValue(FileProviderKey, fileProvider);
+  FConfigurationBuilder.Properties.AddOrSetValue(FileProviderKey, fileProvider);
   //builder.Properties[FileProviderKey] := fileProvider;
 
-  Result := builder;
+  Result := FConfigurationBuilder;
 end;
 
 end.

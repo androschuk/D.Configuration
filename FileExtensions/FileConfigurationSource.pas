@@ -151,11 +151,10 @@ begin
   FReloadDelay := 250;
 end;
 
-procedure TFileConfigurationSource.EnsureDefaults(
-  builder: IConfigurationBuilder);
+procedure TFileConfigurationSource.EnsureDefaults(builder: IConfigurationBuilder);
 begin
   If FFileProvider  = Nil then
-    FFileProvider :=  TFileConfigurationHelper.GetFileProvider(builder);
+    FFileProvider :=  TFileConfiguration(builder).GetFileProvider();
 
 //TODO: GetFileLoadExceptionHandler
 //  if Not Assigned(OnLoadException) then

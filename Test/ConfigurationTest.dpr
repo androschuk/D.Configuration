@@ -60,11 +60,13 @@ var
   configBuilder: IConfigurationBuilder;
 begin
   configBuilder := TConfigurationBuilder.Create;
-  TFileConfigurationHelper.SetBasePath(configBuilder, ExtractFilePath(ParamStr(0)));
-  TJsonConfigurationHelper.AddJsonFile(configBuilder, 'appsettings.json', false, true);
-  TIniConfigurationHelper.AddIniFile(configBuilder, 'appsettings.ini', false, true);
-  TEnvironmentVariablesHelper.AddEnvironmentVariables(configBuilder);
-  TEnvironmentVariablesHelper.AddEnvironmentVariables(configBuilder, 'ARK');
+  TFileConfiguration(configBuilder).SetBasePath(ExtractFilePath(ParamStr(0)));
+
+  TJsonConfiguration(configBuilder).AddJsonFile('appsettings.json', false, true);
+  TIniConfiguration(configBuilder).AddIniFile('appsettings.ini', false, true);
+  TEnvVariablesConfiguration(configBuilder)
+    .AddEnvironmentVariables()
+    .AddEnvironmentVariables('S3');
 
   Result := configBuilder.Build;
 end;
@@ -75,6 +77,8 @@ var
   dict: IDictionary<string,string>;
   item: TPair<string,string>;
 begin
+  ReportMemoryLeaksOnShutdown := true;
+
   try
     dict := TEnvironment.GetEnvironmentVariables();
 

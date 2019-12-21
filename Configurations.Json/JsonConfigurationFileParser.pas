@@ -95,6 +95,7 @@ begin
 
     VisitElement(jsonObj);
   finally
+    FreeAndNil(jsonObj);
     FreeAndNil(jsonStream);
   end;
 

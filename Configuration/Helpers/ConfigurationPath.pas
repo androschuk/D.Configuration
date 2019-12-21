@@ -88,14 +88,18 @@ begin
     raise EArgumentException.Create('pathSegments');
 
   enum := pathSegments.GetEnumerator;
-  if (enum <> nil) and enum.MoveNext then
-  begin
-    Result := enum.Current;
-    while enum.MoveNext do
-      Result := Result + KeyDelimiter + enum.Current;
-  end
-  else
-    Result := '';
+  try
+      if (enum <> nil) and enum.MoveNext then
+      begin
+        Result := enum.Current;
+        while enum.MoveNext do
+          Result := Result + KeyDelimiter + enum.Current;
+      end
+      else
+        Result := '';
+  finally
+    FreeAndNil(enum);
+  end;
 end;
 
 class function TConfigurationPath.GetParentPath(path: string): string;

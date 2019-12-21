@@ -206,7 +206,7 @@ begin
   if TFileSystemInfoHelper.IsExcluded(fileInfo, FFilters) then
     Exit(TNotFoundFileInfo.Create(subPath));
 
-  Result :=  TPhysicalFileInfo.Create(fileInfo);
+  Result := TPhysicalFileInfo.Create(fileInfo);
 end;
 
 function TPhysicalFileProvider.GetFullPath(path: string): string;

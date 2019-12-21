@@ -10,55 +10,59 @@ type
   /// <summary>
   /// Helper methods for registering <see cref="TEnvironmentVariablesConfigurationProvider"/> with <see cref="IConfigurationBuilder"/>.
   /// </summary>
-  TEnvironmentVariablesHelper = class
+  TEnvVariablesConfiguration = record
+  private
+    FConfigurationBuilder: IConfigurationBuilder;
   public
     /// <summary>
-    /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from environment variables.
+    ///  Implicit casting
+    ///  <param name="value">The <see cref="IConfigurationBuilder"/> to use to.</param>
     /// </summary>
-    /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
-    /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-    class function AddEnvironmentVariables(configurationBuilder: IConfigurationBuilder): IConfigurationBuilder; overload;
+    class operator Implicit(const value: IConfigurationBuilder): TEnvVariablesConfiguration;
+    /// <summary>
+    ///  Implicit casting
+    ///  <param name="value">The <see cref="TEnvVariablesConfiguration"/> to use to.</param>
+    /// </summary>
+    class operator Implicit(const value: TEnvVariablesConfiguration): IConfigurationBuilder;
+
     /// <summary>
     /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from environment variables
     /// with a specified prefix.
     /// </summary>
-    /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
     /// <param name="prefix">The prefix that environment variable names must start with. The prefix will be removed from the environment variable names.</param>
-    /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-    class function AddEnvironmentVariables(configurationBuilder: IConfigurationBuilder; prefix: string): IConfigurationBuilder; overload;
+    /// <returns>The <see cref="TEnvVariablesConfiguration"/>.</returns>
+    function AddEnvironmentVariables(prefix: string = ''): TEnvVariablesConfiguration; overload;
     /// <summary>
     /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from environment variables.
     /// </summary>
-    /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
     /// <param name="configureSource">Configures the source.</param>
-    /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-    class function AddEnvironmentVariables(configurationBuilder: IConfigurationBuilder; configureSource: TProc<TEnvironmentVariablesConfigurationSource>): IConfigurationBuilder; overload;
+    /// <returns>The <see cref="TEnvVariablesConfiguration"/>.</returns>
+    function AddEnvironmentVariables(configureSource: TProc<TEnvironmentVariablesConfigurationSource>): TEnvVariablesConfiguration; overload;
   end;
 
 implementation
 
 { TEnvironmentVariablesHelper }
 
-class function TEnvironmentVariablesHelper.AddEnvironmentVariables(
-  configurationBuilder: IConfigurationBuilder): IConfigurationBuilder;
+function TEnvVariablesConfiguration.AddEnvironmentVariables(prefix: string = ''): TEnvVariablesConfiguration;
 begin
-  configurationBuilder.Add(TEnvironmentVariablesConfigurationSource.Create());
-  Result := configurationBuilder;
+  FConfigurationBuilder.Add(TEnvironmentVariablesConfigurationSource.Create(prefix));
+  Result := FConfigurationBuilder;
 end;
 
-class function TEnvironmentVariablesHelper.AddEnvironmentVariables(
-  configurationBuilder: IConfigurationBuilder;
-  prefix: string): IConfigurationBuilder;
+function TEnvVariablesConfiguration.AddEnvironmentVariables(configureSource: TProc<TEnvironmentVariablesConfigurationSource>): TEnvVariablesConfiguration;
 begin
-  configurationBuilder.Add(TEnvironmentVariablesConfigurationSource.Create(prefix));
-  Result := configurationBuilder;
+  Result := TConfigurationHelper.Add<TEnvironmentVariablesConfigurationSource>(FConfigurationBuilder, configureSource);
 end;
 
-class function TEnvironmentVariablesHelper.AddEnvironmentVariables(
-  configurationBuilder: IConfigurationBuilder;
-  configureSource: TProc<TEnvironmentVariablesConfigurationSource>): IConfigurationBuilder;
+class operator TEnvVariablesConfiguration.Implicit(const value: IConfigurationBuilder): TEnvVariablesConfiguration;
 begin
-  Result := TConfigurationHelper.Add<TEnvironmentVariablesConfigurationSource>(configurationBuilder, configureSource);
+    Result.FConfigurationBuilder := value;
+end;
+
+class operator TEnvVariablesConfiguration.Implicit(const value: TEnvVariablesConfiguration): IConfigurationBuilder;
+begin
+    Result := value.FConfigurationBuilder;
 end;
 
 end.
